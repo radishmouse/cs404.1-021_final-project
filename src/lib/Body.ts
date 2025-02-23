@@ -10,12 +10,13 @@ export class Body {
   p5: P5;
 
   constructor(x: number, y: number, vx: number, vy: number, m: number) {
+    this.p5 = P5Instance.getInstance();
     this.pos = new Vector(x, y);
     this.vel = new Vector(vx, vy);
+    this.vel = new Vector(this.p5.random(-1, 1), this.p5.random(-1, 1));
     this.acc = new Vector(0, 0);
     this.mass = m;
     this.r = Math.sqrt(this.mass) * 2;
-    this.p5 = P5Instance.getInstance();
   }
 
   applyForce(force: Vector) {
@@ -41,7 +42,7 @@ export class Body {
     this.p5.strokeWeight(8);
     //fill(255, 200);
     //ellipse(this.pos.x, this.pos.y, this.r);
-    this.p5.stroke(255);
+    this.p5.stroke(255, 0, 0);
     this.p5.point(this.pos.x, this.pos.y);
   }
 }

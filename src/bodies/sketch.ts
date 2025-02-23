@@ -18,11 +18,14 @@ function sketch(p5: P5) {
   p5.draw = () => {
     p5.background(0);
     for (const body of bodies) {
+      body.update();
       body.show();
     }
   };
 }
 
 function mousePressed(evt: MouseEvent) {
-  bodies.push(new Body(evt.x, evt.y, 0, 0, 100));
+  for (let i = 0; i < 5; i++) {
+    bodies.push(new Body(evt.x, evt.y, 0, 0, 100));
+  }
 }
