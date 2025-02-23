@@ -2,6 +2,7 @@ import P5, { Vector } from "p5";
 import { P5Instance } from "./p5Instance";
 
 export class Body {
+  id: number;
   pos: Vector;
   vel: Vector;
   acc: Vector;
@@ -9,8 +10,16 @@ export class Body {
   r: number;
   p5: P5;
 
-  constructor(x: number, y: number, vx: number, vy: number, m: number) {
+  constructor(
+    id: number,
+    x: number,
+    y: number,
+    vx: number,
+    vy: number,
+    m: number,
+  ) {
     this.p5 = P5Instance.getInstance();
+    this.id = id;
     this.pos = new Vector(x, y);
     this.vel = new Vector(vx, vy);
     // Test that a body can move.
@@ -21,8 +30,9 @@ export class Body {
   }
 
   applyForce(force: Vector) {
-    force.div(this.mass);
-    this.acc.add(force);
+    const f = this.p5.createVector();
+    Vector.div(force, this.mass, f);
+    this.acc.add(f);
   }
 
   // body: Body
