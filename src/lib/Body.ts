@@ -37,15 +37,36 @@ export class Body {
   }
 
   attract(body: Body) {
-    const force = this.p5.createVector();
-    Vector.sub(this.pos, body.pos, force);
-    const distanceSq = this.p5.constrain(force.magSq(), 0, this.p5.width / 2);
-    // const distance = Math.abs(
-    //   this.p5.dist(this.pos.x, this.pos.y, body.pos.x, body.pos.y),
-    // );
-    // const strength = (G * (this.mass * body.mass)) / (distance * distance);
-    const strength = (G * (this.mass * body.mass)) / distanceSq;
+    // Direction vector from this body to the other body.
+    const force = Vector.sub(body.pos, this.pos);
+
+    // Squared distance between the bodies.
+    // This is faster than calculating the actual distance.
+    const distanceSq = force.magSq();
+
+    // Use minimum distance based on bodies' radii to prevent excessive forces.
+    const minDistance = this.r + body.r;
+
+    // Max distance based on the sketch dimensions.
+    const maxDistance = Math.max(this.p5.width, this.p5.height);
+
+    // Constrain the distance to prevent extreme forces.
+    const distance = this.p5.constrain(
+      distanceSq,
+      minDistance * minDistance,
+      maxDistance,
+    );
+
+    // Calculate gravitational force using Newton's formula: F = G * (m1 * m2) / r²
+    const strength = (G * (this.mass * body.mass)) / distance;
+
+    // Set the force vector to the calculated strength.
     force.setMag(strength);
+
+    // Negate the force to make it attractive.
+    force.mult(-1);
+
+    // Apply the force to the other body.
     body.applyForce(force);
   }
 

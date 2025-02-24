@@ -38,11 +38,11 @@ function sketch(p5: P5) {
     );
     quadtree = new QuadTree(boundary);
     for (let i = 0; i < HOW_MANY; i++) {
-      const pos = Vector.random2D();
-      const vel = pos.copy();
-      vel.setMag(p5.random(10, 15));
-      pos.setMag(p5.random(150, 200));
-      vel.rotate(p5.PI / 2);
+      // const pos = Vector.random2D();
+      // const vel = pos.copy();
+      // vel.setMag(p5.random(10, 15));
+      // pos.setMag(p5.random(150, 200));
+      // vel.rotate(p5.PI / 2);
       const m = p5.random(25, 50);
 
       bodies.push(
@@ -50,8 +50,8 @@ function sketch(p5: P5) {
           bodies.length, // "auto-incrementing" IDs
           p5.random(0, WIDTH), // initial x position
           p5.random(0, HEIGHT), // initial y position
-          vel.x, // initial x velocity
-          vel.y, // initial y velocity
+          0, // initial x velocity
+          0, // initial y velocity
           m, // mass
         ),
       );
