@@ -2,13 +2,13 @@ import P5, { Vector } from "p5";
 import { P5Instance } from "./p5Instance";
 
 export class Body {
+  p5: P5;
   id: number;
   pos: Vector;
   vel: Vector;
   acc: Vector;
   mass: number;
   r: number;
-  p5: P5;
 
   constructor(
     id: number,
