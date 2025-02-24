@@ -1,5 +1,5 @@
 import P5, { Vector } from "p5";
-import { HEIGHT, HOW_MANY, WIDTH } from "../const";
+import { HEIGHT, HOW_MANY, USE_BARNES_HUT, WIDTH } from "../const";
 import { Body } from "../lib/Body";
 import { P5Instance } from "../lib/p5Instance";
 import { QuadTree } from "../lib/Quadtree";
@@ -71,16 +71,17 @@ function sketch(p5: P5) {
       for (let sun of suns) {
         sun.attract(body);
       }
-      // This is the N^2 version
-      // for (const neighbor of bodies) {
-      //   if (body.id !== neighbor.id) {
-      //     body.attract(neighbor);
-      //   }
-      // }
-
-      // Barnes-Hut
-      const force = quadtree.calculateForce(body);
-      body.applyForce(force);
+      if (USE_BARNES_HUT) {
+        const force = quadtree.calculateForce(body);
+        body.applyForce(force);
+      } else {
+        // This is the N^2 version
+        for (const neighbor of bodies) {
+          if (body.id !== neighbor.id) {
+            body.attract(neighbor);
+          }
+        }
+      }
 
       body.update();
       body.show(2);
