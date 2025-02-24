@@ -26,4 +26,6 @@ html {
     right: 0; */
     border: 1px solid black;
     padding: 8px 4px;
+    min-height: 1.5rem;
+    height: 1.5rem;
 }

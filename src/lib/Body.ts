@@ -39,7 +39,11 @@ export class Body {
   attract(body: Body) {
     const force = this.p5.createVector();
     Vector.sub(this.pos, body.pos, force);
-    const distanceSq = this.p5.constrain(force.magSq(), 5, 25);
+    const distanceSq = this.p5.constrain(force.magSq(), 0, this.p5.width / 2);
+    // const distance = Math.abs(
+    //   this.p5.dist(this.pos.x, this.pos.y, body.pos.x, body.pos.y),
+    // );
+    // const strength = (G * (this.mass * body.mass)) / (distance * distance);
     const strength = (G * (this.mass * body.mass)) / distanceSq;
     force.setMag(strength);
     body.applyForce(force);
@@ -54,7 +58,7 @@ export class Body {
 
   show(size: number = 1, colorName?: string) {
     this.p5.noStroke();
-    this.p5.strokeWeight(this.p5.constrain(size * this.mass, 0, 80));
+    this.p5.strokeWeight(this.p5.constrain(size * this.mass * 3.5, 0, 80));
     //fill(255, 200);
     //ellipse(this.pos.x, this.pos.y, this.r);
     if (colorName) {

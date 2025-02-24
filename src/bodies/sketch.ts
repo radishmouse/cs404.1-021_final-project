@@ -1,4 +1,4 @@
-import P5 from "p5";
+import P5, { Vector } from "p5";
 import { HEIGHT, HOW_MANY, WIDTH } from "../const";
 import { Body } from "../lib/Body";
 import { P5Instance } from "../lib/p5Instance";
@@ -8,6 +8,7 @@ import { Point } from "../lib/Point";
 
 let quadtree: QuadTree;
 const bodies: Body[] = [];
+const suns: Body[] = [];
 const p5Sketch = new P5(sketch);
 
 console.log(`Created new sketch`);
@@ -17,7 +18,7 @@ function sketch(p5: P5) {
   P5Instance.setInstance(p5);
   // const testForce = p5.createVector(0, 0.05);
 
-  // const sun = new Body(0, WIDTH / 2, HEIGHT / 2, 0, 0, 500);
+  suns.push(new Body(0, WIDTH / 2, HEIGHT / 2, 0, 0, 600));
   let count = 0;
   let fpsEl!: Element;
   const el = document.querySelector("#fps");
@@ -27,7 +28,8 @@ function sketch(p5: P5) {
 
   p5.setup = () => {
     const canvas = p5.createCanvas(WIDTH, HEIGHT);
-    canvas.mousePressed(mousePressed);
+    canvas.mouseClicked(mouseClicked);
+    canvas.doubleClicked(mouseDoubleClicked);
     const boundary = new Rectangle(
       p5.width / 2,
       p5.height / 2,
@@ -36,14 +38,21 @@ function sketch(p5: P5) {
     );
     quadtree = new QuadTree(boundary);
     for (let i = 0; i < HOW_MANY; i++) {
+      const pos = Vector.random2D();
+      const vel = pos.copy();
+      vel.setMag(p5.random(10, 15));
+      pos.setMag(p5.random(150, 200));
+      vel.rotate(p5.PI / 2);
+      const m = p5.random(2.5, 3.5);
+
       bodies.push(
         new Body(
           bodies.length, // "auto-incrementing" IDs
           p5.random(0, WIDTH), // initial x position
           p5.random(0, HEIGHT), // initial y position
-          p5.random(-1, 1), // initial x velocity
-          0, // initial y velocity
-          p5.random(10), // mass
+          vel.x, // initial x velocity
+          vel.y, // initial y velocity
+          m, // mass
         ),
       );
     }
@@ -57,16 +66,17 @@ function sketch(p5: P5) {
     }
 
     for (const body of bodies) {
-      // sun.attract(body);
-      // First, do the O(n^2)
-      // nested loop
-      // shouldn't I do i, j so that I can start j at i?
+      for (let sun of suns) {
+        sun.attract(body);
+      }
+      // This is the N^2 version
       for (const neighbor of bodies) {
         if (body.id !== neighbor.id) {
           body.attract(neighbor);
         }
       }
-      //
+
+      // This is where we query the quadtree
       // Then, do the O(N logN) using the quadtree
       // query the quadtree for neighbors of body
       // for each neighbor (that !== body)
@@ -82,14 +92,20 @@ function sketch(p5: P5) {
       fpsEl.textContent = `FPS: ${Math.floor(p5.frameRate())}`;
       count = 0;
     }
-    // sun.update();
-    // sun.show(20, "orange");
+    for (let sun of suns) {
+      sun.update();
+      sun.show(0.025, "white");
+    }
   };
 }
 
-function mousePressed(evt: MouseEvent) {
+function mouseClicked(evt: MouseEvent) {
   // for (let i = 0; i < 10; i++) {
   //   bodies.push(new Body(bodies.length, evt.x + i, evt.y + i, 0, 0, 10));
   // }
-  bodies.push(new Body(bodies.length, evt.x, evt.y, 0, 0, 2));
+  bodies.push(new Body(bodies.length, evt.x, evt.y, 0, 0, 2.5));
+}
+
+function mouseDoubleClicked(evt: MouseEvent) {
+  suns.push(new Body(suns.length, evt.x, evt.y, 0, 0, 600));
 }
