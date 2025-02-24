@@ -9,13 +9,19 @@ import { Point } from "../lib/Point";
 const bodies: Body[] = [];
 const p5Sketch = new P5(sketch);
 let quadtree: QuadTree;
+let count = 0;
+let fpsEl!: Element;
+const el = document.querySelector("#fps");
+if (el) {
+  fpsEl = el;
+}
 
 console.log(`Created new sketch`);
 console.log(p5Sketch);
 
 function sketch(p5: P5) {
   P5Instance.setInstance(p5);
-  // const wind = p5.createVector(0.05, 0);
+  const wind = p5.createVector(0, 0.05);
 
   p5.setup = () => {
     const canvas = p5.createCanvas(WIDTH, HEIGHT);
@@ -35,15 +41,23 @@ function sketch(p5: P5) {
     quadtree.clear();
     for (const body of bodies) {
       // body.attract();
-      // body.applyForce(wind);
+      body.applyForce(wind);
       body.update();
       body.show();
       quadtree.insert(new Point(body.pos.x, body.pos.y));
     }
     quadtree.show();
+    count++;
+    if (count >= 60) {
+      fpsEl.textContent = `FPS: ${Math.floor(p5.frameRate())}`;
+      count = 0;
+    }
   };
 }
 
 function mousePressed(evt: MouseEvent) {
-  bodies.push(new Body(bodies.length, evt.x, evt.y, 0, 0, 10));
+  for (let i = 0; i < 10; i++) {
+    bodies.push(new Body(bodies.length, evt.x + i, evt.y + i, 0, 0, 10));
+  }
+  // bodies.push(new Body(bodies.length, evt.x, evt.y, 0, 0, 10));
 }

@@ -23,7 +23,7 @@ export class Body {
     this.pos = new Vector(x, y);
     this.vel = new Vector(vx, vy);
     // Test that a body can move.
-    // this.vel = new Vector(this.p5.random(-1, 1), this.p5.random(-1, 1));
+    this.vel = new Vector(this.p5.random(-1, 1), this.p5.random(0, 1));
     this.acc = new Vector(0, 0);
     this.mass = m;
     this.r = Math.sqrt(this.mass) * 2;

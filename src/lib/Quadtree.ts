@@ -68,21 +68,21 @@ export class QuadTree {
   }
 
   subdivide() {
-    let x = this.boundary.x;
-    let y = this.boundary.y;
-    let w = this.boundary.w;
-    let h = this.boundary.h;
+    const x = this.boundary.x;
+    const y = this.boundary.y;
+    const w = this.boundary.w;
+    const h = this.boundary.h;
 
-    let northeastBoundary = new Rectangle(x + w / 2, y - h / 2, w / 2, h / 2);
+    const northeastBoundary = new Rectangle(x + w / 2, y - h / 2, w / 2, h / 2);
     this.northeast = new QuadTree(northeastBoundary, this.capacity);
     this.northeast.depth = this.depth + 1;
-    let northwestBoundary = new Rectangle(x - w / 2, y - h / 2, w / 2, h / 2);
+    const northwestBoundary = new Rectangle(x - w / 2, y - h / 2, w / 2, h / 2);
     this.northwest = new QuadTree(northwestBoundary, this.capacity);
     this.northwest.depth = this.depth + 1;
-    let southeastBoundary = new Rectangle(x + w / 2, y + h / 2, w / 2, h / 2);
+    const southeastBoundary = new Rectangle(x + w / 2, y + h / 2, w / 2, h / 2);
     this.southeast = new QuadTree(southeastBoundary, this.capacity);
     this.southeast.depth = this.depth + 1;
-    let southwestBoundary = new Rectangle(x - w / 2, y + h / 2, w / 2, h / 2);
+    const southwestBoundary = new Rectangle(x - w / 2, y + h / 2, w / 2, h / 2);
     this.southwest = new QuadTree(southwestBoundary, this.capacity);
     this.southwest.depth = this.depth + 1;
 
@@ -143,14 +143,8 @@ export class QuadTree {
       this.southeast!.show();
       this.northeast!.show();
       this.northwest!.show();
-    } else if (this.points.length > 0) {
-      // rect(
-      //   this.boundary.x,
-      //   this.boundary.y,
-      //   this.boundary.w * 2,
-      //   this.boundary.h * 2,
-      // );
     }
+
     this.p5.rect(
       this.boundary.x,
       this.boundary.y,
