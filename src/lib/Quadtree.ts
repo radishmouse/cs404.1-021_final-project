@@ -14,6 +14,9 @@ export class QuadTree {
   northeast?: QuadTree;
   southwest?: QuadTree;
   southeast?: QuadTree;
+  mass: number = 0;
+  centerOfMassX: number = 0;
+  centerOfMassY: number = 0;
 
   // Default to 1 point per cell.
   constructor(boundary: Rectangle, capacity: number = 1) {
@@ -43,7 +46,7 @@ export class QuadTree {
     }
   }
 
-  insert(point: Point): boolean {
+  insert(point: Point, mass: number): boolean {
     if (!this.boundary.contains(point)) {
       return false;
     }
@@ -51,20 +54,47 @@ export class QuadTree {
     if (!this.hasChildren()) {
       if (this.points.length < this.capacity) {
         this.points.push(point);
+        this.mass = mass;
+        this.centerOfMassX = point.x;
+        this.centerOfMassY = point.y;
         return true;
       }
 
       this.subdivide();
     }
 
-    return (
-      this.northeast!.insert(point) ||
-      this.northwest!.insert(point) ||
-      this.southeast!.insert(point) ||
-      this.southwest!.insert(point)
-    );
+    const inserted =
+      this.northeast!.insert(point, mass) ||
+      this.northwest!.insert(point, mass) ||
+      this.southeast!.insert(point, mass) ||
+      this.southwest!.insert(point, mass);
 
-    return false;
+    if (inserted) {
+      // Record the cummulative mass of descendents.
+      this.mass =
+        this.northeast!.mass +
+        this.northwest!.mass +
+        this.southeast!.mass +
+        this.southwest!.mass;
+
+      // Adjust center of mass X.
+      this.centerOfMassX =
+        (this.northeast!.centerOfMassX * this.northeast!.mass +
+          this.northwest!.centerOfMassX * this.northwest!.mass +
+          this.southeast!.centerOfMassX * this.southeast!.mass +
+          this.southwest!.centerOfMassX * this.southwest!.mass) /
+        this.mass;
+
+      // Adjust center of mass Y.
+      this.centerOfMassY =
+        (this.northeast!.centerOfMassY * this.northeast!.mass +
+          this.northwest!.centerOfMassY * this.northwest!.mass +
+          this.southeast!.centerOfMassY * this.southeast!.mass +
+          this.southwest!.centerOfMassY * this.southwest!.mass) /
+        this.mass;
+    }
+
+    return inserted;
   }
 
   subdivide() {
@@ -106,6 +136,7 @@ export class QuadTree {
     this.points = [];
   }
 
+  // Unused for Barnes-Hut
   query(range: Rectangle, found: Point[]) {
     if (!found) {
       found = [];

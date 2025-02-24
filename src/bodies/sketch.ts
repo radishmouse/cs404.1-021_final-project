@@ -62,7 +62,7 @@ function sketch(p5: P5) {
     p5.background(0);
     quadtree.clear();
     for (const body of bodies) {
-      quadtree.insert(new Point(body.pos.x, body.pos.y));
+      quadtree.insert(new Point(body.pos.x, body.pos.y), body.mass);
     }
 
     for (const body of bodies) {
