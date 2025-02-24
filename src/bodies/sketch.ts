@@ -18,7 +18,7 @@ function sketch(p5: P5) {
   P5Instance.setInstance(p5);
   // const testForce = p5.createVector(0, 0.05);
 
-  suns.push(new Body(0, WIDTH / 2, HEIGHT / 2, 0, 0, 300));
+  // suns.push(new Body(0, WIDTH / 2, HEIGHT / 2, 0, 0, 100));
   let count = 0;
   let fpsEl!: Element;
   const el = document.querySelector("#fps");
@@ -61,6 +61,8 @@ function sketch(p5: P5) {
   p5.draw = () => {
     p5.background(0);
     quadtree.clear();
+
+    // Build quadtree of x,y point and mass of each Body.
     for (const body of bodies) {
       quadtree.insert(new Point(body.pos.x, body.pos.y), body.mass);
     }
@@ -70,18 +72,16 @@ function sketch(p5: P5) {
         sun.attract(body);
       }
       // This is the N^2 version
-      for (const neighbor of bodies) {
-        if (body.id !== neighbor.id) {
-          body.attract(neighbor);
-        }
-      }
+      // for (const neighbor of bodies) {
+      //   if (body.id !== neighbor.id) {
+      //     body.attract(neighbor);
+      //   }
+      // }
 
-      // This is where we query the quadtree
-      // Then, do the O(N logN) using the quadtree
-      // query the quadtree for neighbors of body
-      // for each neighbor (that !== body)
-      // add the gravitational effect as a force for this body
-      //
+      // Barnes-Hut
+      const force = quadtree.calculateForce(body);
+      body.applyForce(force);
+
       body.update();
       body.show(2);
     }

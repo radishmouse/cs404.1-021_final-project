@@ -1,8 +1,10 @@
-import P5 from "p5";
+import P5, { Vector } from "p5";
 import { P5Instance } from "./p5Instance";
 import { Rectangle } from "./Rectangle";
 import { Point } from "./Point";
 import { mapDepthToColor } from "./utils";
+import { G, THETA } from "../const";
+import { Body } from "./Body";
 
 export class QuadTree {
   p5: P5;
@@ -119,12 +121,16 @@ export class QuadTree {
     // Move points to children.
     // This improves performance by placing points
     // in the smallest available rectangle.
+    // NOTE: This is only valid if capacity is == 1.
+    if (this.capacity !== 1 || this.points.length > 1) {
+      throw Error("Incorrect mass distributed during subdivide");
+    }
     for (const p of this.points) {
       const inserted =
-        this.northeast.insert(p) ||
-        this.northwest.insert(p) ||
-        this.southeast.insert(p) ||
-        this.southwest.insert(p);
+        this.northeast.insert(p, this.mass) ||
+        this.northwest.insert(p, this.mass) ||
+        this.southeast.insert(p, this.mass) ||
+        this.southwest.insert(p, this.mass);
 
       if (!inserted) {
         console.error("could not further subdivide");
@@ -136,7 +142,66 @@ export class QuadTree {
     this.points = [];
   }
 
-  // Unused for Barnes-Hut
+  calculateForce(body: Body): Vector {
+    // If empty, return a zero vector.
+    if (!this.hasChildren() && this.points.length === 0) {
+      return this.p5.createVector(0, 0);
+    }
+
+    // Assume that if this Quadtree's x,y point
+    // is the same as the body's x,y point,
+    // it's the same point.
+    if (
+      this.points.length === 1 &&
+      this.points[0].x === body.pos.x &&
+      this.points[0].y === body.pos.y
+    ) {
+      return this.p5.createVector(0, 0);
+    }
+
+    const d = this.p5.dist(
+      this.centerOfMassX,
+      this.centerOfMassY,
+      body.pos.x,
+      body.pos.y,
+    );
+    const s = this.boundary.w * 2; // width of the region
+
+    // If s/d < θ, treat this node as a single body
+    if (s / d < THETA || !this.hasChildren()) {
+      const force = this.p5.createVector(
+        body.pos.x - this.centerOfMassX,
+        body.pos.y - this.centerOfMassY,
+      );
+      const distanceSq = force.magSq();
+      const minDistance = body.r * 2;
+      // Max distance based on the sketch dimensions.
+      const maxDistance = Math.max(this.p5.width, this.p5.height);
+
+      const distance = this.p5.constrain(
+        distanceSq,
+        minDistance * minDistance,
+        maxDistance,
+      );
+
+      const strength = (G * this.mass * body.mass) / distance;
+      force.setMag(strength);
+      force.mult(-1);
+      return force;
+    }
+
+    // Otherwise, recursively calculate forces from children
+    const totalForce = this.p5.createVector(0, 0);
+    if (this.hasChildren()) {
+      totalForce.add(this.northeast!.calculateForce(body, THETA));
+      totalForce.add(this.northwest!.calculateForce(body, THETA));
+      totalForce.add(this.southeast!.calculateForce(body, THETA));
+      totalForce.add(this.southwest!.calculateForce(body, THETA));
+    }
+    return totalForce;
+  }
+
+  // Useful for Boids, but not for Barnes-Hut.
   query(range: Rectangle, found: Point[]) {
     if (!found) {
       found = [];
