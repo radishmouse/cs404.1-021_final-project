@@ -150,7 +150,7 @@ export class QuadTree {
 
     // Assume that if this Quadtree's x,y point
     // is the same as the body's x,y point,
-    // it's the same point.
+    // it's the same point (i.e., the same Body).
     if (
       this.points.length === 1 &&
       this.points[0].x === body.pos.x &&
@@ -159,45 +159,75 @@ export class QuadTree {
       return this.p5.createVector(0, 0);
     }
 
+    // Determine the distance between this Quadtree node.
+    // and the Body we'll exert force on.
     const d = this.p5.dist(
       this.centerOfMassX,
       this.centerOfMassY,
       body.pos.x,
       body.pos.y,
     );
+
+    // Get the size of the area represented by
+    // this Quadtree node.
     const s = this.boundary.w * 2; // width of the region
 
-    // If s/d < θ, treat this node as a single body
+    // If the ratio of size to distance is less than
+    // our cutoff point (THEATA), we treat this
+    // region as a single Body.
+    // Or, if there are no subdivisions,
+    // then this Quadtree only represents a single Body.
     if (s / d < THETA || !this.hasChildren()) {
+      // Direction vector *from* other body to this body.
+      // Note: we'll need to flip the direction later to make
+      // this an attractive force.
       const force = this.p5.createVector(
         body.pos.x - this.centerOfMassX,
         body.pos.y - this.centerOfMassY,
       );
+
+      // Squared distance between the bodies.
+      // This is faster than calculating the actual distance.
       const distanceSq = force.magSq();
+
+      // Use minimum distance based on bodies' radii to prevent excessive forces.
       const minDistance = body.r * 2;
+
       // Max distance based on the sketch dimensions.
       const maxDistance = Math.max(this.p5.width, this.p5.height);
 
+      // Constrain the distance to prevent extreme forces.
       const distance = this.p5.constrain(
         distanceSq,
         minDistance * minDistance,
         maxDistance,
       );
 
+      // Calculate gravitational force using Newton's formula: F = G * (m1 * m2) / r²
       const strength = (G * this.mass * body.mass) / distance;
+
+      // Set the force vector to the calculated strength.
       force.setMag(strength);
+
+      // Negate the force to make it attractive.
       force.mult(-1);
+
+      // Return the force so that it can be
+      // cummulatively applied.
       return force;
     }
 
     // Otherwise, recursively calculate forces from children
     const totalForce = this.p5.createVector(0, 0);
     if (this.hasChildren()) {
-      totalForce.add(this.northeast!.calculateForce(body, THETA));
-      totalForce.add(this.northwest!.calculateForce(body, THETA));
-      totalForce.add(this.southeast!.calculateForce(body, THETA));
-      totalForce.add(this.southwest!.calculateForce(body, THETA));
+      totalForce.add(this.northeast!.calculateForce(body));
+      totalForce.add(this.northwest!.calculateForce(body));
+      totalForce.add(this.southeast!.calculateForce(body));
+      totalForce.add(this.southwest!.calculateForce(body));
     }
+
+    // Return the force so that it can be
+    // cummulatively applied.
     return totalForce;
   }
 

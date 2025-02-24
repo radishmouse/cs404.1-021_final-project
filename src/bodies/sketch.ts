@@ -1,5 +1,12 @@
 import P5, { Vector } from "p5";
-import { HEIGHT, HOW_MANY, USE_BARNES_HUT, WIDTH } from "../const";
+import {
+  COLOR_SUN,
+  HEIGHT,
+  HOW_MANY,
+  SHOW_QUAD_TREE,
+  USE_BARNES_HUT,
+  WIDTH,
+} from "../const";
 import { Body } from "../lib/Body";
 import { P5Instance } from "../lib/p5Instance";
 import { QuadTree } from "../lib/Quadtree";
@@ -16,8 +23,7 @@ console.log(p5Sketch);
 
 function sketch(p5: P5) {
   P5Instance.setInstance(p5);
-  // const testForce = p5.createVector(0, 0.05);
-
+  // A fixed sun, in the center of the sketch.
   // suns.push(new Body(0, WIDTH / 2, HEIGHT / 2, 0, 0, 100));
   let count = 0;
   let fpsEl!: Element;
@@ -60,34 +66,51 @@ function sketch(p5: P5) {
 
   p5.draw = () => {
     p5.background(0);
-    quadtree.clear();
 
-    // Build quadtree of x,y point and mass of each Body.
+    // Build a new quadtree of x,y point and mass of each Body.
+    // This is an O(N logN) operation.
+    quadtree.clear();
     for (const body of bodies) {
       quadtree.insert(new Point(body.pos.x, body.pos.y), body.mass);
     }
 
+    // Calculate and apply the gravitational forces
+    // for each Body.
     for (const body of bodies) {
       for (let sun of suns) {
+        // We can add multiple "suns" to create
+        // some additional gravity.
         sun.attract(body);
       }
+
+      // There's a global const that determines if
+      // we're in Barnes-Hut mode or pairwise-comparision mode.
       if (USE_BARNES_HUT) {
+        // Start at the root, and accumulate the gravitational
+        // forces exerted on this Body. This will
+        // recursively call `calculateForce` as we work
+        // down towards leaf nodes.
         const force = quadtree.calculateForce(body);
+
+        // Apply the cummulative force on this Body.
         body.applyForce(force);
       } else {
         // This is the N^2 version
+        // that compares every Body to every
+        // other Body.
         for (const neighbor of bodies) {
           if (body.id !== neighbor.id) {
             body.attract(neighbor);
           }
         }
       }
-
       body.update();
       body.show(2);
     }
 
-    quadtree.show();
+    if (SHOW_QUAD_TREE) {
+      quadtree.show();
+    }
     count++;
     if (count >= 30) {
       fpsEl.textContent = `FPS: ${Math.floor(p5.frameRate())}`;
@@ -95,7 +118,7 @@ function sketch(p5: P5) {
     }
     for (let sun of suns) {
       sun.update();
-      sun.show(0.25, "white");
+      sun.show(0.25, COLOR_SUN);
     }
   };
 }

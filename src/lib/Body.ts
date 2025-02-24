@@ -1,6 +1,6 @@
 import P5, { Vector } from "p5";
 import { P5Instance } from "./p5Instance";
-import { G, MAX_VELOCITY } from "../const";
+import { COLOR_BODY, G, MAX_VELOCITY } from "../const";
 
 export class Body {
   p5: P5;
@@ -37,7 +37,9 @@ export class Body {
   }
 
   attract(body: Body) {
-    // Direction vector from this body to the other body.
+    // Direction vector *from* other body to this body.
+    // Note: we'll need to flip the direction later to make
+    // this an attractive force.
     const force = Vector.sub(body.pos, this.pos);
 
     // Squared distance between the bodies.
@@ -77,16 +79,16 @@ export class Body {
     this.acc.set(0, 0);
   }
 
-  show(size: number = 1, colorName?: string) {
+  show(size: number = 1, colorName: string = COLOR_BODY) {
     this.p5.noStroke();
     this.p5.strokeWeight(this.p5.constrain(size * (this.mass / 10), 0, 80));
     //fill(255, 200);
     //ellipse(this.pos.x, this.pos.y, this.r);
-    if (colorName) {
-      this.p5.stroke(colorName);
-    } else {
-      this.p5.stroke(255, 0, 0);
-    }
+    this.p5.stroke(colorName);
+    // if (colorName) {
+    // } else {
+    //   this.p5.stroke(255, 0, 0);
+    // }
     this.p5.point(this.pos.x, this.pos.y);
   }
 }
