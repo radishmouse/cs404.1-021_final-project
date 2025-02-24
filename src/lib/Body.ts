@@ -58,7 +58,7 @@ export class Body {
 
   show(size: number = 1, colorName?: string) {
     this.p5.noStroke();
-    this.p5.strokeWeight(this.p5.constrain(size * this.mass * 3.5, 0, 80));
+    this.p5.strokeWeight(this.p5.constrain(size * (this.mass / 10), 0, 80));
     //fill(255, 200);
     //ellipse(this.pos.x, this.pos.y, this.r);
     if (colorName) {

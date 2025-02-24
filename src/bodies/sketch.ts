@@ -18,7 +18,7 @@ function sketch(p5: P5) {
   P5Instance.setInstance(p5);
   // const testForce = p5.createVector(0, 0.05);
 
-  suns.push(new Body(0, WIDTH / 2, HEIGHT / 2, 0, 0, 600));
+  suns.push(new Body(0, WIDTH / 2, HEIGHT / 2, 0, 0, 300));
   let count = 0;
   let fpsEl!: Element;
   const el = document.querySelector("#fps");
@@ -43,7 +43,7 @@ function sketch(p5: P5) {
       vel.setMag(p5.random(10, 15));
       pos.setMag(p5.random(150, 200));
       vel.rotate(p5.PI / 2);
-      const m = p5.random(2.5, 3.5);
+      const m = p5.random(25, 50);
 
       bodies.push(
         new Body(
@@ -83,18 +83,18 @@ function sketch(p5: P5) {
       // add the gravitational effect as a force for this body
       //
       body.update();
-      body.show();
+      body.show(2);
     }
 
     quadtree.show();
     count++;
-    if (count >= 60) {
+    if (count >= 30) {
       fpsEl.textContent = `FPS: ${Math.floor(p5.frameRate())}`;
       count = 0;
     }
     for (let sun of suns) {
       sun.update();
-      sun.show(0.025, "white");
+      sun.show(0.25, "white");
     }
   };
 }
@@ -103,7 +103,7 @@ function mouseClicked(evt: MouseEvent) {
   // for (let i = 0; i < 10; i++) {
   //   bodies.push(new Body(bodies.length, evt.x + i, evt.y + i, 0, 0, 10));
   // }
-  bodies.push(new Body(bodies.length, evt.x, evt.y, 0, 0, 2.5));
+  bodies.push(new Body(bodies.length, evt.x, evt.y, 0, 0, 25));
 }
 
 function mouseDoubleClicked(evt: MouseEvent) {
