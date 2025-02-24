@@ -1,5 +1,6 @@
 import P5, { Vector } from "p5";
 import { P5Instance } from "./p5Instance";
+import { G, MAX_VELOCITY } from "../const";
 
 export class Body {
   p5: P5;
@@ -23,7 +24,7 @@ export class Body {
     this.pos = new Vector(x, y);
     this.vel = new Vector(vx, vy);
     // Test that a body can move.
-    this.vel = new Vector(this.p5.random(-1, 1), this.p5.random(0, 1));
+    // this.vel = new Vector(this.p5.random(-1, 1), this.p5.random(-1, 1));
     this.acc = new Vector(0, 0);
     this.mass = m;
     this.r = Math.sqrt(this.mass) * 2;
@@ -35,27 +36,32 @@ export class Body {
     this.acc.add(f);
   }
 
-  // body: Body
-  attract() {
-    // const force = Vector.sub(this.pos, body.pos);
-    // const distanceSq = constrain(n, low, high);
-    const gravity = new Vector(0, 0.5);
-    this.applyForce(gravity);
+  attract(body: Body) {
+    const force = this.p5.createVector();
+    Vector.sub(this.pos, body.pos, force);
+    const distanceSq = this.p5.constrain(force.magSq(), 5, 25);
+    const strength = (G * (this.mass * body.mass)) / distanceSq;
+    force.setMag(strength);
+    body.applyForce(force);
   }
 
   update() {
     this.vel.add(this.acc);
     this.pos.add(this.vel);
-    this.vel.limit(15);
+    this.vel.limit(MAX_VELOCITY);
     this.acc.set(0, 0);
   }
 
-  show() {
+  show(size: number = 1, colorName?: string) {
     this.p5.noStroke();
-    this.p5.strokeWeight(8);
+    this.p5.strokeWeight(this.p5.constrain(size * this.mass, 0, 80));
     //fill(255, 200);
     //ellipse(this.pos.x, this.pos.y, this.r);
-    this.p5.stroke(255, 0, 0);
+    if (colorName) {
+      this.p5.stroke(colorName);
+    } else {
+      this.p5.stroke(255, 0, 0);
+    }
     this.p5.point(this.pos.x, this.pos.y);
   }
 }

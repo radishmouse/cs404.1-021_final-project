@@ -21,9 +21,9 @@ html {
 }
 
 #fps {
-    position: absolute;
+    /* position: absolute;
     top: 0;
-    right: 0;
+    right: 0; */
     border: 1px solid black;
     padding: 8px 4px;
 }

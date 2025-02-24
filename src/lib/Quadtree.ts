@@ -97,7 +97,9 @@ export class QuadTree {
         this.southwest.insert(p);
 
       if (!inserted) {
-        throw RangeError("capacity must be greater than 0");
+        console.error("could not further subdivide");
+        console.error("discarding point");
+        // throw RangeError("capacity must be greater than 0");
       }
     }
 
