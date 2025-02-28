@@ -1,10 +1,15 @@
-import P5, { Vector } from "p5";
+import P5 from "p5";
 import {
+  ADD_SUN as ADD_DEFAULT_SUN,
   COLOR_SUN,
   HEIGHT,
   HOW_MANY,
+  MASS_BODY_MAX,
+  MASS_BODY_MIN,
+  MASS_SUN,
   SHOW_QUAD_TREE,
   USE_BARNES_HUT,
+  IS_GRAVITY_ON,
   WIDTH,
 } from "../const";
 import { Body } from "../lib/Body";
@@ -18,13 +23,21 @@ const bodies: Body[] = [];
 const suns: Body[] = [];
 const p5Sketch = new P5(sketch);
 
+const ACTION_ADD_BODY = "action_add_body";
+const ACTION_ADD_SUN = "action_add_sun";
+const actions: string[] = [];
+
+let isPaused = false;
+
 console.log(`Created new sketch`);
 console.log(p5Sketch);
 
 function sketch(p5: P5) {
   P5Instance.setInstance(p5);
   // A fixed sun, in the center of the sketch.
-  // suns.push(new Body(0, WIDTH / 2, HEIGHT / 2, 0, 0, 100));
+  if (ADD_DEFAULT_SUN) {
+    suns.push(new Body(0, WIDTH / 2, HEIGHT / 2, 0, 0, MASS_SUN));
+  }
   let count = 0;
   let fpsEl!: Element;
   const el = document.querySelector("#fps");
@@ -34,8 +47,32 @@ function sketch(p5: P5) {
 
   p5.setup = () => {
     const canvas = p5.createCanvas(WIDTH, HEIGHT);
-    canvas.mouseClicked(mouseClicked);
-    canvas.doubleClicked(mouseDoubleClicked);
+    document.addEventListener("keydown", (event) => {
+      if (event.ctrlKey && event.key === "z") {
+        if (actions.length === 0) {
+          return;
+        }
+
+        const last_action = actions.pop();
+        if (last_action === ACTION_ADD_SUN) {
+          suns.pop();
+        } else if (last_action === ACTION_ADD_BODY) {
+          bodies.pop();
+        }
+      }
+    });
+    canvas.mouseClicked(() => {
+      if (p5.keyIsDown(p5.CONTROL)) {
+        console.log("add sun");
+        addSun(p5.mouseX, p5.mouseY);
+      } else if (p5.keyIsDown(p5.ALT)) {
+        console.log("pause/unpause");
+        isPaused = !isPaused;
+      } else {
+        addBody(p5.mouseX, p5.mouseY);
+      }
+    });
+
     const boundary = new Rectangle(
       p5.width / 2,
       p5.height / 2,
@@ -49,7 +86,7 @@ function sketch(p5: P5) {
       // vel.setMag(p5.random(10, 15));
       // pos.setMag(p5.random(150, 200));
       // vel.rotate(p5.PI / 2);
-      const m = p5.random(25, 50);
+      const m = p5.random(MASS_BODY_MIN, MASS_BODY_MAX);
 
       bodies.push(
         new Body(
@@ -77,38 +114,42 @@ function sketch(p5: P5) {
     // Calculate and apply the gravitational forces
     // for each Body.
     for (const body of bodies) {
-      for (let sun of suns) {
-        // We can add multiple "suns" to create
-        // some additional gravity.
-        sun.attract(body);
-      }
+      if (IS_GRAVITY_ON) {
+        for (let sun of suns) {
+          // We can add multiple "suns" to create
+          // some additional gravity.
+          sun.attract(body);
+        }
 
-      // There's a global const that determines if
-      // we're in Barnes-Hut mode or pairwise-comparision mode.
-      if (USE_BARNES_HUT) {
-        // Start at the root, and accumulate the gravitational
-        // forces exerted on this Body. This will
-        // recursively call `calculateForce` as we work
-        // down towards leaf nodes.
-        const force = quadtree.calculateForce(body);
+        // There's a global const that determines if
+        // we're in Barnes-Hut mode or pairwise-comparision mode.
+        if (USE_BARNES_HUT) {
+          // Start at the root, and accumulate the gravitational
+          // forces exerted on this Body. This will
+          // recursively call `calculateForce` as we work
+          // down towards leaf nodes.
+          const force = quadtree.calculateForce(body);
 
-        // Apply the cummulative force on this Body.
-        body.applyForce(force);
-      } else {
-        // This is the N^2 version
-        // that compares every Body to every
-        // other Body.
-        for (const neighbor of bodies) {
-          if (body.id !== neighbor.id) {
-            body.attract(neighbor);
+          // Apply the cummulative force on this Body.
+          body.applyForce(force, isPaused);
+        } else {
+          // This is the N^2 version
+          // that compares every Body to every
+          // other Body.
+          for (const neighbor of bodies) {
+            if (body.id !== neighbor.id) {
+              body.attract(neighbor, isPaused);
+            }
           }
         }
       }
-      body.update();
+      if (!isPaused) {
+        body.update();
+      }
       body.show(2);
     }
 
-    if (SHOW_QUAD_TREE) {
+    if (SHOW_QUAD_TREE && USE_BARNES_HUT) {
       quadtree.show();
     }
     count++;
@@ -123,13 +164,16 @@ function sketch(p5: P5) {
   };
 }
 
-function mouseClicked(evt: MouseEvent) {
+function addBody(x: number, y: number) {
   // for (let i = 0; i < 10; i++) {
   //   bodies.push(new Body(bodies.length, evt.x + i, evt.y + i, 0, 0, 10));
   // }
-  bodies.push(new Body(bodies.length, evt.x, evt.y, 0, 0, 25));
+  bodies.push(new Body(bodies.length, x, y, 0, 0, 25));
+  actions.push(ACTION_ADD_BODY);
 }
 
-function mouseDoubleClicked(evt: MouseEvent) {
-  suns.push(new Body(suns.length, evt.x, evt.y, 0, 0, 600));
+function addSun(x: number, y: number) {
+  suns.push(new Body(suns.length, x, y, 0, 0, MASS_SUN));
+  actions.push("sun");
+  actions.push(ACTION_ADD_SUN);
 }

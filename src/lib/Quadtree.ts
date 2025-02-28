@@ -3,7 +3,7 @@ import { P5Instance } from "./p5Instance";
 import { Rectangle } from "./Rectangle";
 import { Point } from "./Point";
 import { mapDepthToColor } from "./utils";
-import { G, THETA } from "../const";
+import { G, SHOW_FORCES, THETA } from "../const";
 import { Body } from "./Body";
 
 export class QuadTree {
@@ -185,7 +185,17 @@ export class QuadTree {
         body.pos.x - this.centerOfMassX,
         body.pos.y - this.centerOfMassY,
       );
-
+      if (SHOW_FORCES) {
+        this.p5.strokeWeight(1);
+        this.p5.stroke(255, 255, 255, 50);
+        this.p5.noFill();
+        this.p5.line(
+          this.centerOfMassX,
+          this.centerOfMassY,
+          body.pos.x,
+          body.pos.y,
+        );
+      }
       // Squared distance between the bodies.
       // This is faster than calculating the actual distance.
       const distanceSq = force.magSq();

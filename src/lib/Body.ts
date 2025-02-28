@@ -1,6 +1,13 @@
 import P5, { Vector } from "p5";
 import { P5Instance } from "./p5Instance";
-import { COLOR_BODY, G, MAX_VELOCITY } from "../const";
+import {
+  COLOR_BODY,
+  G,
+  MAX_VELOCITY,
+  USE_RAINBOW,
+  RAINBOW_COLORS,
+  SHOW_FORCES,
+} from "../const";
 
 export class Body {
   p5: P5;
@@ -30,13 +37,16 @@ export class Body {
     this.r = Math.sqrt(this.mass) * 2;
   }
 
-  applyForce(force: Vector) {
+  applyForce(force: Vector, isPaused: boolean = false) {
+    if (isPaused) {
+      return;
+    }
     const f = this.p5.createVector();
     Vector.div(force, this.mass, f);
     this.acc.add(f);
   }
 
-  attract(body: Body) {
+  attract(body: Body, isPaused: boolean = false) {
     // Direction vector *from* other body to this body.
     // Note: we'll need to flip the direction later to make
     // this an attractive force.
@@ -64,12 +74,17 @@ export class Body {
 
     // Set the force vector to the calculated strength.
     force.setMag(strength);
-
+    if (SHOW_FORCES) {
+      this.p5.strokeWeight(1);
+      this.p5.stroke(255, 255, 255, 50);
+      this.p5.noFill();
+      this.p5.line(this.pos.x, this.pos.y, body.pos.x, body.pos.y);
+    }
     // Negate the force to make it attractive.
     force.mult(-1);
 
     // Apply the force to the other body.
-    body.applyForce(force);
+    body.applyForce(force, isPaused);
   }
 
   update() {
@@ -84,7 +99,11 @@ export class Body {
     this.p5.strokeWeight(this.p5.constrain(size * (this.mass / 10), 0, 80));
     //fill(255, 200);
     //ellipse(this.pos.x, this.pos.y, this.r);
-    this.p5.stroke(colorName);
+    if (USE_RAINBOW) {
+      this.p5.stroke(RAINBOW_COLORS[this.id % RAINBOW_COLORS.length]);
+    } else {
+      this.p5.stroke(colorName);
+    }
     // if (colorName) {
     // } else {
     //   this.p5.stroke(255, 0, 0);
