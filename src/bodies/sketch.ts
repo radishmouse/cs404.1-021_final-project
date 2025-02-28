@@ -1,6 +1,6 @@
 import P5 from "p5";
 import {
-  ADD_SUN as ADD_DEFAULT_SUN,
+  ADD_DEFAULT_SUN,
   COLOR_SUN,
   HEIGHT,
   HOW_MANY,
@@ -8,8 +8,6 @@ import {
   MASS_BODY_MIN,
   MASS_SUN,
   SHOW_QUAD_TREE,
-  USE_BARNES_HUT,
-  IS_GRAVITY_ON,
   WIDTH,
 } from "../const";
 import { Body } from "../lib/Body";
@@ -27,6 +25,8 @@ const ACTION_ADD_BODY = "action_add_body";
 const ACTION_ADD_SUN = "action_add_sun";
 const actions: string[] = [];
 
+let useBarnesHut = true;
+let isGravityOn = true;
 let isPaused = false;
 
 console.log(`Created new sketch`);
@@ -45,6 +45,9 @@ function sketch(p5: P5) {
     fpsEl = el;
   }
 
+  const checkboxGravity = document.querySelector("#gravity");
+  const checkboxBarnesHut = document.querySelector("#barnes-hut");
+
   p5.setup = () => {
     const canvas = p5.createCanvas(WIDTH, HEIGHT);
     document.addEventListener("keydown", (event) => {
@@ -61,6 +64,21 @@ function sketch(p5: P5) {
         }
       }
     });
+
+    if (checkboxGravity) {
+      (checkboxGravity as HTMLInputElement).checked = isGravityOn;
+    }
+    if (checkboxBarnesHut) {
+      (checkboxBarnesHut as HTMLInputElement).checked = useBarnesHut;
+    }
+
+    checkboxGravity?.addEventListener("change", () => {
+      isGravityOn = !isGravityOn;
+    });
+    checkboxBarnesHut?.addEventListener("change", () => {
+      useBarnesHut = !useBarnesHut;
+    });
+
     canvas.mouseClicked(() => {
       if (p5.keyIsDown(p5.CONTROL)) {
         console.log("add sun");
@@ -114,7 +132,7 @@ function sketch(p5: P5) {
     // Calculate and apply the gravitational forces
     // for each Body.
     for (const body of bodies) {
-      if (IS_GRAVITY_ON) {
+      if (isGravityOn) {
         for (let sun of suns) {
           // We can add multiple "suns" to create
           // some additional gravity.
@@ -123,7 +141,7 @@ function sketch(p5: P5) {
 
         // There's a global const that determines if
         // we're in Barnes-Hut mode or pairwise-comparision mode.
-        if (USE_BARNES_HUT) {
+        if (useBarnesHut) {
           // Start at the root, and accumulate the gravitational
           // forces exerted on this Body. This will
           // recursively call `calculateForce` as we work
@@ -149,7 +167,7 @@ function sketch(p5: P5) {
       body.show(2);
     }
 
-    if (SHOW_QUAD_TREE && USE_BARNES_HUT) {
+    if (SHOW_QUAD_TREE && useBarnesHut) {
       quadtree.show();
     }
     count++;

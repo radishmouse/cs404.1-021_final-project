@@ -1,8 +1,6 @@
-export const ADD_SUN = false;
-export const IS_GRAVITY_ON = true;
+export const ADD_DEFAULT_SUN = false;
 export const SHOW_QUAD_TREE = true;
 
-export const USE_BARNES_HUT = true;
 export const THETA = 1.0;
 
 export const USE_RAINBOW = true;
