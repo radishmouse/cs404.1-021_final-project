@@ -1,17 +1,9 @@
-export const ADD_DEFAULT_SUN = false;
-export const SHOW_QUAD_TREE = true;
+export const ADD_DEFAULT_SUN = true;
+export const USE_RAINBOW = true;
+export const SHOW_FORCES = false;
 
 export const THETA = 1.0;
-
-export const USE_RAINBOW = true;
-export const SHOW_FORCES = true;
-
-export const MASS_SUN = 600;
-export const MASS_BODY_MIN = 25;
-export const MASS_BODY_MAX = 50;
-
-export const COLOR_BODY = "red";
-export const COLOR_SUN = "yellow";
+export const SHOW_QUAD_TREE = true;
 
 // Values for Barnes-Hut, THETA = 0.5
 // 30 FPS @500 bodies
@@ -19,9 +11,9 @@ export const COLOR_SUN = "yellow";
 // 15 FPS @1000 bodies
 // 10 FPS @1200 bodies
 // 8 FPS @1500 bodies
-export const HOW_MANY = 0;
+export const HOW_MANY = 40;
 export const G = 0.35;
-export const MAX_VELOCITY = 55;
+export const MAX_VELOCITY = 15;
 
 // Pairwise N^2, velocities 15-35
 // 60 FPS, up to 200 bodies.
@@ -34,6 +26,12 @@ export const MAX_VELOCITY = 55;
 
 export const WIDTH = 600;
 export const HEIGHT = 600;
+export const MASS_SUN = 600;
+export const MASS_BODY_MIN = 25;
+export const MASS_BODY_MAX = 50;
+
+export const COLOR_BODY = "red";
+export const COLOR_SUN = "yellow";
 
 export const RAINBOW_COLORS = [
   "red",

@@ -4,18 +4,51 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>N-Body Attraction</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Press+Start+2P&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            html,
+            body {
+                font-family: "Fira Code", serif;
+                font-optical-sizing: auto;
+                font-weight: 400;
+                font-style: normal;
+
+                background: rgb(204, 204, 204);
+                height: 100%;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            #container {
+                width: 600px;
+            }
+            #header {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        </style>
     </head>
     <body>
-        <div id="fps">FPS:</div>
-        <div id="controls">
-            <label
-                >Gravity:
-                <input type="checkbox" id="gravity" />
-            </label>
-            <label
-                >Use Barnes-Hut:
-                <input type="checkbox" id="barnes-hut" />
-            </label>
+        <div id="container">
+            <div id="header">
+                <div id="fps">FPS:</div>
+                <div id="controls">
+                    <label
+                        >Gravity:
+                        <input type="checkbox" id="gravity" />
+                    </label>
+                    <label
+                        >Use Barnes-Hut:
+                        <input type="checkbox" id="barnes-hut" />
+                    </label>
+                </div>
+            </div>
         </div>
         <script type="module" src="/src/bodies/sketch.ts"></script>
     </body>
