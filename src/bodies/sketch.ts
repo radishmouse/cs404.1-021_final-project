@@ -4,24 +4,23 @@ import {
   COLOR_SUN,
   HEIGHT,
   HOW_MANY,
-  MASS_BODY_MAX,
-  MASS_BODY_MIN,
   MASS_SUN,
   SHOW_QUAD_TREE,
   WIDTH,
+  PARTICLE_DEFAULT_SIZE,
 } from "../const";
-import { Body } from "../lib/Body";
+import { Particle } from "../lib/Particle";
 import { P5Instance } from "../lib/p5Instance";
 import { QuadTree } from "../lib/Quadtree";
 import { Rectangle } from "../lib/Rectangle";
 import { Point } from "../lib/Point";
 
 let quadtree: QuadTree;
-const bodies: Body[] = [];
-const suns: Body[] = [];
+const particles: Particle[] = [];
+const suns: Particle[] = [];
 const p5Sketch = new P5(sketch);
 
-const ACTION_ADD_BODY = "action_add_body";
+const ACTION_ADD_PARTICLE = "action_add_particle";
 const ACTION_ADD_SUN = "action_add_sun";
 const actions: string[] = [];
 
@@ -59,8 +58,8 @@ function sketch(p5: P5) {
         const last_action = actions.pop();
         if (last_action === ACTION_ADD_SUN) {
           suns.pop();
-        } else if (last_action === ACTION_ADD_BODY) {
-          bodies.pop();
+        } else if (last_action === ACTION_ADD_PARTICLE) {
+          particles.pop();
         }
       }
     });
@@ -87,7 +86,7 @@ function sketch(p5: P5) {
         console.log("pause/unpause");
         isPaused = !isPaused;
       } else {
-        addBody(p5.mouseX, p5.mouseY);
+        addParticle(p5.mouseX, p5.mouseY);
       }
     });
 
@@ -106,9 +105,9 @@ function sketch(p5: P5) {
       // vel.rotate(p5.PI / 2);
       const m = p5.random(MASS_BODY_MIN, MASS_BODY_MAX);
 
-      bodies.push(
-        new Body(
-          bodies.length, // "auto-incrementing" IDs
+      particles.push(
+        new Particle(
+          particles.length, // "auto-incrementing" IDs
           p5.random(0, WIDTH), // initial x position
           p5.random(0, HEIGHT), // initial y position
           0, // initial x velocity
@@ -182,16 +181,16 @@ function sketch(p5: P5) {
   };
 }
 
-function addBody(x: number, y: number) {
+function addParticle(x: number, y: number) {
   // for (let i = 0; i < 10; i++) {
-  //   bodies.push(new Body(bodies.length, evt.x + i, evt.y + i, 0, 0, 10));
+  //   particles.push(new Particle(particles.length, evt.x + i, evt.y + i, 0, 0, 10));
   // }
-  bodies.push(new Body(bodies.length, x, y, 0, 0, 25));
-  actions.push(ACTION_ADD_BODY);
+  particles.push(new Particle(particles.length, x, y, 0, 0, 25));
+  actions.push(ACTION_ADD_PARTICLE);
 }
 
 function addSun(x: number, y: number) {
-  suns.push(new Body(suns.length, x, y, 0, 0, MASS_SUN));
+  suns.push(new Particle(suns.length, x, y, 0, 0, MASS_SUN));
   actions.push("sun");
   actions.push(ACTION_ADD_SUN);
 }
