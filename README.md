@@ -1,4 +1,30 @@
 
+# How to run
+
+## Install Node.js runtime
+
+You'll need to install [Node.js](https://nodejs.org).
+
+
+## Clone the repository
+
+```shell
+git clone https://github.com/radishmouse/cs404.1-021_final-project.git
+
+cd cs404.1-021_final-project
+```
+
+## Install dependencies
+
+```shell
+npm run dev
+```
+
+## Open in browser
+
+Go to `http://localhost:5173/` in your browser.
+
+---
 
 Initially set up via `pnpm`:
 
