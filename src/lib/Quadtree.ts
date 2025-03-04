@@ -305,4 +305,41 @@ export class QuadTree {
       this.boundary.h * 2,
     );
   }
+
+  toString(): string {
+    const indent = (depth: number) => "  ".repeat(depth);
+    const branch = (isLast: boolean) => (isLast ? "└──" : "├──");
+
+    const buildString = (
+      node: QuadTree,
+      depth: number = 0,
+      isLast: boolean = true,
+    ): string => {
+      const prefix = depth === 0 ? "" : `${indent(depth - 1)}${branch(isLast)}`;
+      const nodeSymbol = node.isEmpty() ? "○" : "●";
+
+      let result = `${prefix}${nodeSymbol}\n`;
+
+      if (node.hasChildren()) {
+        const children = [
+          node.northeast!,
+          node.southeast!,
+          node.southwest!,
+          node.northwest!,
+        ];
+
+        children.forEach((child, index) => {
+          result += buildString(
+            child,
+            depth + 1,
+            index === children.length - 1,
+          );
+        });
+      }
+
+      return result;
+    };
+
+    return buildString(this);
+  }
 }

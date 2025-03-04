@@ -118,7 +118,9 @@ function sketch(p5: P5) {
         if (last_action === ACTION_ADD_SUN) {
           suns.pop();
         } else if (last_action === ACTION_ADD_PARTICLE) {
+          // Undo
           particles.pop();
+          logTree();
         }
       }
     });
@@ -173,6 +175,10 @@ function sketch(p5: P5) {
         ),
       );
     }
+
+    if (HOW_MANY === 0) {
+      logTree();
+    }
   };
 
   P5Instance.setInstance(p5);
@@ -194,10 +200,20 @@ function addParticle(x: number, y: number) {
   // }
   particles.push(new Particle(particles.length, x, y, 0, 0, 25));
   actions.push(ACTION_ADD_PARTICLE);
+  logTree();
 }
 
 function addSun(x: number, y: number) {
   suns.push(new Particle(suns.length, x, y, 0, 0, MASS_SUN));
   actions.push("sun");
   actions.push(ACTION_ADD_SUN);
+}
+
+function logTree() {
+  if (quadtree) {
+    setTimeout(() => {
+      const treeAsString = quadtree.toString();
+      console.log(treeAsString);
+    }, 100);
+  }
 }
