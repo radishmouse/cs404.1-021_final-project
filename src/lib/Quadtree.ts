@@ -269,7 +269,8 @@ export class QuadTree {
   show() {
     const colors = mapDepthToColor(this.depth);
     this.p5.strokeWeight(1);
-    this.p5.stroke(colors[0], colors[1], colors[2]);
+    // this.p5.stroke(colors[0], colors[1], colors[2]);
+    this.p5.stroke(COLOR_QUADTREE);
 
     // stroke(150, 0, 150);
 
