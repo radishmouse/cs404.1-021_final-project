@@ -9,6 +9,13 @@
             rel="stylesheet"
         />
         <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
             html,
             body {
                 font-family: "Fira Code", serif;
@@ -21,8 +28,9 @@
                 width: 100%;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
+                justify-content: flex-start;
                 align-items: center;
+                min-height: 100vh;
             }
             #container {
                 width: 600px;
