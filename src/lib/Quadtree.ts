@@ -142,24 +142,40 @@ export class QuadTree {
     this.points = [];
   }
 
-  calculateForce(particle: Particle): Vector {
-    // If empty, return a zero vector.
-    if (!this.hasChildren() && this.points.length === 0) {
-      return this.p5.createVector(0, 0);
-    }
+  isEmpty(): boolean {
+    return !this.hasChildren() && this.points.length === 0;
+  }
 
-    // Assume that if this Quadtree's x,y point
-    if (
+  isSameAs(particle: Particle): boolean {
+    // If this Quadtree has 1 point
+    // and its x,y is same as particle's x,y
+    // then it must represent the same Particle.
+    return (
       this.points.length === 1 &&
-      this.points[0].x === body.pos.x &&
-      this.points[0].y === body.pos.y
-    ) {
-    // is the same as the particle's x,y point,
-    // it's the same point (i.e., the same Particle).
+      this.points[0].x === particle.pos.x &&
+      this.points[0].y === particle.pos.y
+    );
+  }
+
+  calculateForce(particle: Particle): Vector {
+    // If this node is empty, return a force of zero.
+    if (this.isEmpty()) {
       return this.p5.createVector(0, 0);
     }
 
-    // Determine the distance between this Quadtree node.
+    // If it's the same particle, return a force of zero.
+    if (this.isSameAs(particle)) {
+      return this.p5.createVector(0, 0);
+    }
+
+    // If it's not empty and it's not the same particle,
+    // there will be *something* that can exert a force.
+
+    // First, we'll test if this node can represent
+    // its descendants. (i.e., treat this part of the
+    // tree as a cluster)
+
+    // Determine the distance between this Quadtree node
     // and the Particle we'll exert force on.
     const d = this.p5.dist(
       this.centerOfMassX,
@@ -168,15 +184,12 @@ export class QuadTree {
       particle.pos.y,
     );
 
-    // Get the size of the area represented by
-    // this Quadtree node.
-    const s = this.boundary.w * 2; // width of the region
+    // Get the size of the area represented by this Quadtree node.
+    const s = this.boundary.w * this.boundary.h;
 
-    // If the ratio of size to distance is less than
-    // our cutoff point (THEATA), we treat this
-    // region as a single Particle.
-    // Or, if there are no subdivisions,
-    // then this Quadtree only represents a single Particle.
+    // We'll use this Quadtree node for the force calculation if either:
+    // - the ratio of size to distance is less than our cutoff point (THETA),
+    // - or it has no children.
     if (s / d < THETA || !this.hasChildren()) {
       // Direction vector *from* other particle to this particle.
       // Note: we'll need to flip the direction later to make
@@ -227,7 +240,9 @@ export class QuadTree {
       return force;
     }
 
-    // Otherwise, recursively calculate forces from children
+    // At this point, the Quadtree node must have children
+    // and it's s/d ratio is above the cutoff point.
+    // We recursively calculate forces using the children.
     const totalForce = this.p5.createVector(0, 0);
     if (this.hasChildren()) {
       totalForce.add(this.northeast!.calculateForce(particle));
@@ -236,8 +251,7 @@ export class QuadTree {
       totalForce.add(this.southwest!.calculateForce(particle));
     }
 
-    // Return the force so that it can be
-    // cummulatively applied.
+    // Return the cummulative force.
     return totalForce;
   }
 
