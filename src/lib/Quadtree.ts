@@ -3,8 +3,8 @@ import { P5Instance } from "./p5Instance";
 import { Rectangle } from "./Rectangle";
 import { Point } from "./Point";
 import { mapDepthToColor } from "./utils";
-import { G, SHOW_FORCES, THETA } from "../const";
-import { Body } from "./Body";
+import { COLOR_QUADTREE, G, SHOW_FORCES, THETA } from "../const";
+import { Particle } from "./Particle";
 
 export class QuadTree {
   p5: P5;
@@ -142,30 +142,30 @@ export class QuadTree {
     this.points = [];
   }
 
-  calculateForce(body: Body): Vector {
+  calculateForce(particle: Particle): Vector {
     // If empty, return a zero vector.
     if (!this.hasChildren() && this.points.length === 0) {
       return this.p5.createVector(0, 0);
     }
 
     // Assume that if this Quadtree's x,y point
-    // is the same as the body's x,y point,
-    // it's the same point (i.e., the same Body).
     if (
       this.points.length === 1 &&
       this.points[0].x === body.pos.x &&
       this.points[0].y === body.pos.y
     ) {
+    // is the same as the particle's x,y point,
+    // it's the same point (i.e., the same Particle).
       return this.p5.createVector(0, 0);
     }
 
     // Determine the distance between this Quadtree node.
-    // and the Body we'll exert force on.
+    // and the Particle we'll exert force on.
     const d = this.p5.dist(
       this.centerOfMassX,
       this.centerOfMassY,
-      body.pos.x,
-      body.pos.y,
+      particle.pos.x,
+      particle.pos.y,
     );
 
     // Get the size of the area represented by
@@ -174,16 +174,16 @@ export class QuadTree {
 
     // If the ratio of size to distance is less than
     // our cutoff point (THEATA), we treat this
-    // region as a single Body.
+    // region as a single Particle.
     // Or, if there are no subdivisions,
-    // then this Quadtree only represents a single Body.
+    // then this Quadtree only represents a single Particle.
     if (s / d < THETA || !this.hasChildren()) {
-      // Direction vector *from* other body to this body.
+      // Direction vector *from* other particle to this particle.
       // Note: we'll need to flip the direction later to make
       // this an attractive force.
       const force = this.p5.createVector(
-        body.pos.x - this.centerOfMassX,
-        body.pos.y - this.centerOfMassY,
+        particle.pos.x - this.centerOfMassX,
+        particle.pos.y - this.centerOfMassY,
       );
       if (SHOW_FORCES) {
         this.p5.strokeWeight(1);
@@ -192,16 +192,16 @@ export class QuadTree {
         this.p5.line(
           this.centerOfMassX,
           this.centerOfMassY,
-          body.pos.x,
-          body.pos.y,
+          particle.pos.x,
+          particle.pos.y,
         );
       }
-      // Squared distance between the bodies.
+      // Squared distance between the particles.
       // This is faster than calculating the actual distance.
       const distanceSq = force.magSq();
 
-      // Use minimum distance based on bodies' radii to prevent excessive forces.
-      const minDistance = body.r * 2;
+      // Use minimum distance based on particles' radii to prevent excessive forces.
+      const minDistance = particle.r * 2;
 
       // Max distance based on the sketch dimensions.
       const maxDistance = Math.max(this.p5.width, this.p5.height);
@@ -214,7 +214,7 @@ export class QuadTree {
       );
 
       // Calculate gravitational force using Newton's formula: F = G * (m1 * m2) / r²
-      const strength = (G * this.mass * body.mass) / distance;
+      const strength = (G * this.mass * particle.mass) / distance;
 
       // Set the force vector to the calculated strength.
       force.setMag(strength);
@@ -230,10 +230,10 @@ export class QuadTree {
     // Otherwise, recursively calculate forces from children
     const totalForce = this.p5.createVector(0, 0);
     if (this.hasChildren()) {
-      totalForce.add(this.northeast!.calculateForce(body));
-      totalForce.add(this.northwest!.calculateForce(body));
-      totalForce.add(this.southeast!.calculateForce(body));
-      totalForce.add(this.southwest!.calculateForce(body));
+      totalForce.add(this.northeast!.calculateForce(particle));
+      totalForce.add(this.northwest!.calculateForce(particle));
+      totalForce.add(this.southeast!.calculateForce(particle));
+      totalForce.add(this.southwest!.calculateForce(particle));
     }
 
     // Return the force so that it can be
