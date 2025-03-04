@@ -1,15 +1,18 @@
 import P5, { Vector } from "p5";
 import { P5Instance } from "./p5Instance";
 import {
-  COLOR_BODY,
+  COLOR_PARTICLE,
   G,
   MAX_VELOCITY,
   USE_RAINBOW,
   RAINBOW_COLORS,
   SHOW_FORCES,
+  MASS_BODY_MIN,
+  MASS_BODY_MAX,
+  MASS_SUN,
 } from "../const";
 
-export class Body {
+export class Particle {
   p5: P5;
   id: number;
   pos: Vector;
@@ -22,9 +25,9 @@ export class Body {
     id: number,
     x: number,
     y: number,
-    vx: number,
-    vy: number,
-    m: number,
+    vx: number = 0,
+    vy: number = 0,
+    m: number = -1,
   ) {
     this.p5 = P5Instance.getInstance();
     this.id = id;
@@ -33,6 +36,9 @@ export class Body {
     // Test that a body can move.
     // this.vel = new Vector(this.p5.random(-1, 1), this.p5.random(-1, 1));
     this.acc = new Vector(0, 0);
+    if (m === -1) {
+      m = this.p5.random(MASS_BODY_MIN, MASS_BODY_MAX);
+    }
     this.mass = m;
     this.r = Math.sqrt(this.mass) * 2;
   }
@@ -46,7 +52,7 @@ export class Body {
     this.acc.add(f);
   }
 
-  attract(body: Body, isPaused: boolean = false) {
+  attract(body: Particle, isPaused: boolean = false) {
     // Direction vector *from* other body to this body.
     // Note: we'll need to flip the direction later to make
     // this an attractive force.
@@ -94,12 +100,12 @@ export class Body {
     this.acc.set(0, 0);
   }
 
-  show(size: number = 1, colorName: string = COLOR_BODY) {
+  show(size: number = 1, colorName: string = COLOR_PARTICLE) {
     this.p5.noStroke();
     this.p5.strokeWeight(this.p5.constrain(size * (this.mass / 10), 0, 80));
     //fill(255, 200);
     //ellipse(this.pos.x, this.pos.y, this.r);
-    if (USE_RAINBOW) {
+    if (USE_RAINBOW && this.mass !== MASS_SUN) {
       this.p5.stroke(RAINBOW_COLORS[this.id % RAINBOW_COLORS.length]);
     } else {
       this.p5.stroke(colorName);
@@ -109,5 +115,16 @@ export class Body {
     //   this.p5.stroke(255, 0, 0);
     // }
     this.p5.point(this.pos.x, this.pos.y);
+    // const halfSize = this.p5.constrain(size * (this.mass / 10), 0, 80) / 2;
+    // this.p5.quad(
+    //   this.pos.x,
+    //   this.pos.y - halfSize, // top point
+    //   this.pos.x + halfSize / 2,
+    //   this.pos.y, // right point
+    //   this.pos.x,
+    //   this.pos.y + halfSize, // bottom point
+    //   this.pos.x - halfSize / 2,
+    //   this.pos.y, // left point
+    // );
   }
 }
