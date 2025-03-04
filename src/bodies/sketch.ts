@@ -1,10 +1,12 @@
-import P5 from "p5";
+import P5, { Vector } from "p5";
 import {
   ADD_DEFAULT_SUN,
   COLOR_SUN,
   HEIGHT,
   HOW_MANY,
   MASS_SUN,
+  USE_BARNES_HUT_DEFAULT,
+  USE_GRAVITY_DEFAULT,
   SHOW_QUAD_TREE,
   WIDTH,
   PARTICLE_DEFAULT_SIZE,
@@ -24,31 +26,88 @@ const ACTION_ADD_PARTICLE = "action_add_particle";
 const ACTION_ADD_SUN = "action_add_sun";
 const actions: string[] = [];
 
-let useBarnesHut = true;
-let isGravityOn = true;
+let useBarnesHut = USE_BARNES_HUT_DEFAULT;
+let isGravityOn = USE_GRAVITY_DEFAULT;
 let isPaused = false;
 
-console.log(`Created new sketch`);
+console.log(`Sketch initialized:`);
 console.log(p5Sketch);
 
 function sketch(p5: P5) {
-  P5Instance.setInstance(p5);
-  // A fixed sun, in the center of the sketch.
-  if (ADD_DEFAULT_SUN) {
-    suns.push(new Body(0, WIDTH / 2, HEIGHT / 2, 0, 0, MASS_SUN));
-  }
-  let count = 0;
-  let fpsEl!: Element;
-  const el = document.querySelector("#fps");
-  if (el) {
-    fpsEl = el;
-  }
+  // This function draws a single frame.
+  // It is basically an infinite loop.
+  p5.draw = () => {
+    // Draw a black background on every frame.
+    p5.background("#001837");
+    // Prep to rebuild quadtree.
+    quadtree.clear();
 
-  const checkboxGravity = document.querySelector("#gravity");
-  const checkboxBarnesHut = document.querySelector("#barnes-hut");
+    // Build a new quadtree with x,y point and mass of each Particle in our `particles` array.
+    // This is an O(N logN) operation.
+    for (const particle of particles) {
+      quadtree.insert(new Point(particle.pos.x, particle.pos.y), particle.mass);
+    }
+
+    // Calculate and apply the gravitational forces
+    // for each Particle.
+    for (const particle of particles) {
+      // This lets us "pause" gravity if we want to.
+      if (isGravityOn) {
+        for (let sun of suns) {
+          // We can have multiple "suns" to create
+          // some additional gravity that affects each Particle.
+          sun.attract(particle);
+        }
+
+        // There's a global const that determines if
+        // we're in Barnes-Hut mode or pairwise-comparision mode.
+        if (useBarnesHut) {
+          // Start at the root, and accumulate the gravitational
+          // forces exerted on this Particle. This will
+          // recursively call `calculateForce` as we work
+          // down towards leaf nodes.
+          const force = quadtree.calculateForce(particle);
+
+          // Apply the cummulative force on this Particle.
+          particle.applyForce(force, isPaused);
+        } else {
+          // This is the N^2 version
+          // that compares every Particle to every
+          // other Particle.
+          for (const neighbor of particles) {
+            if (particle.id !== neighbor.id) {
+              particle.attract(neighbor, isPaused);
+              // neighbor.attract(particle, isPaused);
+            }
+          }
+        }
+      }
+      if (!isPaused) {
+        particle.update();
+      }
+      particle.show(PARTICLE_DEFAULT_SIZE);
+    }
+
+    if (SHOW_QUAD_TREE && useBarnesHut) {
+      quadtree.show();
+    }
+    count++;
+    if (count >= 30) {
+      fpsEl.textContent = `FPS: ${Math.floor(p5.frameRate())}`;
+      count = 0;
+    }
+    for (let sun of suns) {
+      sun.update();
+      sun.show(0.25, COLOR_SUN);
+    }
+  };
 
   p5.setup = () => {
     const canvas = p5.createCanvas(WIDTH, HEIGHT);
+
+    const checkboxGravity = document.querySelector("#gravity");
+    const checkboxBarnesHut = document.querySelector("#barnes-hut");
+
     document.addEventListener("keydown", (event) => {
       if (event.ctrlKey && event.key === "z") {
         if (actions.length === 0) {
@@ -98,87 +157,35 @@ function sketch(p5: P5) {
     );
     quadtree = new QuadTree(boundary);
     for (let i = 0; i < HOW_MANY; i++) {
-      // const pos = Vector.random2D();
-      // const vel = pos.copy();
-      // vel.setMag(p5.random(10, 15));
-      // pos.setMag(p5.random(150, 200));
-      // vel.rotate(p5.PI / 2);
-      const m = p5.random(MASS_BODY_MIN, MASS_BODY_MAX);
+      const pos = Vector.random2D();
+      const vel = pos.copy();
+      vel.setMag(p5.random(10, 15));
+      pos.setMag(p5.random(150, 200));
+      vel.rotate(p5.PI / 2);
 
       particles.push(
         new Particle(
           particles.length, // "auto-incrementing" IDs
           p5.random(0, WIDTH), // initial x position
           p5.random(0, HEIGHT), // initial y position
-          0, // initial x velocity
-          0, // initial y velocity
-          m, // mass
+          vel.x,
+          vel.y,
         ),
       );
     }
   };
 
-  p5.draw = () => {
-    p5.background(0);
-
-    // Build a new quadtree of x,y point and mass of each Body.
-    // This is an O(N logN) operation.
-    quadtree.clear();
-    for (const body of bodies) {
-      quadtree.insert(new Point(body.pos.x, body.pos.y), body.mass);
-    }
-
-    // Calculate and apply the gravitational forces
-    // for each Body.
-    for (const body of bodies) {
-      if (isGravityOn) {
-        for (let sun of suns) {
-          // We can add multiple "suns" to create
-          // some additional gravity.
-          sun.attract(body);
-        }
-
-        // There's a global const that determines if
-        // we're in Barnes-Hut mode or pairwise-comparision mode.
-        if (useBarnesHut) {
-          // Start at the root, and accumulate the gravitational
-          // forces exerted on this Body. This will
-          // recursively call `calculateForce` as we work
-          // down towards leaf nodes.
-          const force = quadtree.calculateForce(body);
-
-          // Apply the cummulative force on this Body.
-          body.applyForce(force, isPaused);
-        } else {
-          // This is the N^2 version
-          // that compares every Body to every
-          // other Body.
-          for (const neighbor of bodies) {
-            if (body.id !== neighbor.id) {
-              body.attract(neighbor, isPaused);
-            }
-          }
-        }
-      }
-      if (!isPaused) {
-        body.update();
-      }
-      body.show(2);
-    }
-
-    if (SHOW_QUAD_TREE && useBarnesHut) {
-      quadtree.show();
-    }
-    count++;
-    if (count >= 30) {
-      fpsEl.textContent = `FPS: ${Math.floor(p5.frameRate())}`;
-      count = 0;
-    }
-    for (let sun of suns) {
-      sun.update();
-      sun.show(0.25, COLOR_SUN);
-    }
-  };
+  P5Instance.setInstance(p5);
+  // A fixed sun, in the center of the sketch.
+  if (ADD_DEFAULT_SUN) {
+    suns.push(new Particle(0, WIDTH / 2, HEIGHT / 2, 0, 0, MASS_SUN));
+  }
+  let count = 0;
+  let fpsEl!: Element;
+  const el = document.querySelector("#fps");
+  if (el) {
+    fpsEl = el;
+  }
 }
 
 function addParticle(x: number, y: number) {
