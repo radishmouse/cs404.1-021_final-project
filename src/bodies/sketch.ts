@@ -20,7 +20,7 @@ import { Point } from "../lib/Point";
 let quadtree: QuadTree;
 const particles: Particle[] = [];
 const suns: Particle[] = [];
-const p5Sketch = new P5(sketch);
+new P5(sketch);
 
 const ACTION_ADD_PARTICLE = "action_add_particle";
 const ACTION_ADD_SUN = "action_add_sun";
@@ -29,9 +29,6 @@ const actions: string[] = [];
 let useBarnesHut = USE_BARNES_HUT_DEFAULT;
 let isGravityOn = USE_GRAVITY_DEFAULT;
 let isPaused = false;
-
-console.log(`Sketch initialized:`);
-console.log(p5Sketch);
 
 function sketch(p5: P5) {
   // This function draws a single frame.
@@ -52,36 +49,42 @@ function sketch(p5: P5) {
     // for each Particle.
     for (const particle of particles) {
       // This lets us "pause" gravity if we want to.
-      if (isGravityOn) {
-        for (let sun of suns) {
-          // We can have multiple "suns" to create
-          // some additional gravity that affects each Particle.
+
+      for (let sun of suns) {
+        // We can have multiple "suns" to create
+        // some additional gravity that affects each Particle.
+        if (isGravityOn) {
           sun.attract(particle);
         }
+      }
 
-        // There's a global const that determines if
-        // we're in Barnes-Hut mode or pairwise-comparision mode.
-        if (useBarnesHut) {
-          // Start at the root, and accumulate the gravitational
-          // forces exerted on this Particle. This will
-          // recursively call `calculateForce` as we work
-          // down towards leaf nodes.
-          const force = quadtree.calculateForce(particle);
+      // There's a global const that determines if
+      // we're in Barnes-Hut mode or pairwise-comparision mode.
+      if (useBarnesHut) {
+        // Start at the root, and accumulate the gravitational
+        // forces exerted on this Particle. This will
+        // recursively call `calculateForce` as we work
+        // down towards leaf nodes.
+        const force = quadtree.calculateForce(particle);
 
-          // Apply the cummulative force on this Particle.
+        // Apply the cummulative force on this Particle.
+        if (isGravityOn) {
           particle.applyForce(force, isPaused);
-        } else {
-          // This is the N^2 version
-          // that compares every Particle to every
-          // other Particle.
-          for (const neighbor of particles) {
-            if (particle.id !== neighbor.id) {
+        }
+      } else {
+        // This is the N^2 version
+        // that compares every Particle to every
+        // other Particle.
+        for (const neighbor of particles) {
+          if (particle.id !== neighbor.id) {
+            if (isGravityOn) {
               particle.attract(neighbor, isPaused);
-              // neighbor.attract(particle, isPaused);
             }
+            // neighbor.attract(particle, isPaused);
           }
         }
       }
+
       if (!isPaused) {
         particle.update();
       }

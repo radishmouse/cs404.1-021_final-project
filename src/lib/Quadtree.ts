@@ -190,7 +190,8 @@ export class QuadTree {
     // We'll use this Quadtree node for the force calculation if either:
     // - the ratio of size to distance is less than our cutoff point (THETA),
     // - or it has no children.
-    if (s / d < THETA || !this.hasChildren()) {
+    const isWithinCutoff = s / d < THETA;
+    if (isWithinCutoff || !this.hasChildren()) {
       // Direction vector *from* other particle to this particle.
       // Note: we'll need to flip the direction later to make
       // this an attractive force.
