@@ -1,7 +1,7 @@
 export const USE_BARNES_HUT_DEFAULT = true;
 export const USE_GRAVITY_DEFAULT = true;
 export const USE_RAINBOW = false;
-export const SHOW_FORCES = true;
+export const SHOW_FORCES = false;
 
 export const COLOR_PARTICLE = "#eee2d2";
 export const COLOR_SUN = "#f2cc99";
@@ -13,7 +13,7 @@ export const SHOW_QUAD_TREE = true;
 export const ADD_DEFAULT_SUN = true;
 export const PARTICLE_DEFAULT_SIZE = 2;
 export const HOW_MANY = 80;
-export const MAX_VELOCITY = 25;
+export const MAX_VELOCITY = 15;
 export const G = 0.35;
 // Values for Barnes-Hut, THETA = 0.5
 // 30 FPS @500 bodies
