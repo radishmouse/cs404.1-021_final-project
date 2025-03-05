@@ -13,7 +13,7 @@ export const SHOW_QUAD_TREE = true;
 export const ADD_DEFAULT_SUN = true;
 export const PARTICLE_DEFAULT_SIZE = 2;
 export const HOW_MANY = 80;
-export const MAX_VELOCITY = 15;
+export const MAX_VELOCITY = 20;
 export const G = 0.35;
 // Values for Barnes-Hut, THETA = 0.5
 // 30 FPS @500 bodies
